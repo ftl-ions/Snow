@@ -4,9 +4,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "Ice",
+    name: "Snow",
     products: [
-        .executable(name: "ice", targets: ["Ice"]),
+        .executable(name: "snow", targets: ["Snow"]),
         .library(name: "IceKit", targets: ["IceKit"]),
     ],
     dependencies: [
@@ -17,11 +17,15 @@ let package = Package(
         .package(url: "https://github.com/scottrhoyt/SwiftyTextTable", from: "0.9.0"),
     ],
     targets: [
-        .target(name: "Ice", dependencies: ["IceCLI"]),
-        .target(name: "IceCLI", dependencies: ["IceKit", "PathKit", "Rainbow", "SwiftCLI", "SwiftyTextTable"]),
+        .target(name: "Snow", dependencies: ["IceCLI"]),
+        .target(
+            name: "IceCLI",
+            dependencies: ["IceKit", "PathKit", "Rainbow", "SwiftCLI", "SwiftyTextTable"]),
         .target(name: "IceKit", dependencies: ["PathKit", "Rainbow", "SwiftCLI"]),
         .target(name: "TestingUtilities", dependencies: ["Icebox"]),
-        .testTarget(name: "IceKitTests", dependencies: ["IceKit", "Icebox", "PathKit", "SwiftCLI", "TestingUtilities"]),
+        .testTarget(
+            name: "IceKitTests",
+            dependencies: ["IceKit", "Icebox", "PathKit", "SwiftCLI", "TestingUtilities"]),
         .testTarget(name: "IceTests", dependencies: ["Icebox", "Rainbow", "TestingUtilities"]),
     ]
 )
