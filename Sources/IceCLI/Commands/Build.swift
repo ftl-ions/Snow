@@ -9,40 +9,46 @@ import IceKit
 import SwiftCLI
 
 class BuildCommand: ForwardFlagsCommand, Command {
-    
+
     let name = "build"
     let shortDescription = "Builds the current project"
-    
-    @Key("-t", "--target", description: "The individual target to build; cannot be used with --product")
+
+    @Key(
+        "-t", "--target",
+        description: "The individual target to build; cannot be used with --product")
     var target: String?
-    
-    @Key("-p", "--product", description: "The individual product to build; cannot be used with --target")
+
+    @Key(
+        "-p", "--product",
+        description: "The individual product to build; cannot be used with --target")
     var product: String?
-    
+
     @Flag("-c", "--clean", description: "Clean the build folder before building")
     var clean: Bool
-    
+
     @Flag("-r", "--release", description: "Build with the release configuration")
     var release: Bool
-    
-    @Flag("-w", "--watch", description: "Watch the current folder and rebuild any time a file changes")
+
+    @Flag(
+        "-w", "--watch", description: "Watch the current folder and rebuild any time a file changes"
+    )
     var watch: Bool
-    
+
     var optionGroups: [OptionGroup] {
         return [.atMostOne($target, $product)]
     }
-    
+
     func execute() throws {
-        let spm = SPM()
-        
+        let spm = SPM(config: config.resolved)
+
         if clean {
             try spm.clean()
         }
-        
+
         if watch {
-            let watcher = try SourceWatcher() {
+            let watcher = try SourceWatcher(config: config.resolved) {
                 do {
-                    self.stdout <<< "[ice] rebuilding due to changes...".green
+                    self.stdout <<< "[snow] rebuilding due to changes...".green
                     try self.build(spm: spm)
                 } catch {}
             }
@@ -51,10 +57,12 @@ class BuildCommand: ForwardFlagsCommand, Command {
             try build(spm: spm)
         }
     }
-    
+
     func build(spm: SPM) throws {
-        let buildOption: SPM.BuildOption? = target.flatMap { .target($0) } ?? product.flatMap { .product($0) }
-        try spm.build(release: release, buildOption: buildOption, forwardArguments: forwardArguments)
+        let buildOption: SPM.BuildOption? =
+            target.flatMap { .target($0) } ?? product.flatMap { .product($0) }
+        try spm.build(
+            release: release, buildOption: buildOption, forwardArguments: forwardArguments)
     }
-    
+
 }

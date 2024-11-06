@@ -54,10 +54,13 @@ public enum SwiftExecutable {
 
 public class SPM {
 
+    private let config: Config?
+
     public let directory: Path
 
-    public init(directory: Path = .current) {
+    public init(directory: Path = .current, config: Config? = nil) {
         self.directory = directory
+        self.config = config
     }
 
     // MARK: - Init project
@@ -90,9 +93,7 @@ public class SPM {
         // when printing package resolution info
         try resolve()
 
-        try runExternalTool(
-            executable: "npx",
-            args: ["tailwindcss", "-i", "./Resources/input.css", "-o", "./Public/css/site.css"])
+        try runExternalTools()
 
         var args = ["build", "-Xswiftc", "-no-color-diagnostics"]
         if release {
@@ -110,9 +111,6 @@ public class SPM {
     }
 
     public func run(release: Bool, executable: [String]) throws -> Task {
-        // try runExternalTool(
-        //     executable: "npx",
-        //     args: ["tailwindcss", "-i", "./Resources/input.css", "-o", "./Public/css/site.css"])
         let arguments = try formArgumentsForRun(release: release, executable: executable)
         let task = Task(executable: "swift", arguments: arguments, directory: directory.string)
         task.runAsync()
@@ -120,9 +118,6 @@ public class SPM {
     }
 
     public func runWithoutReturning(release: Bool, executable: [String]) throws -> Never {
-        // try runExternalTool(
-        //     executable: "npx",
-        //     args: ["tailwindcss", "-i", "./Resources/input.css", "-o", "./Public/css/site.css"])
         let arguments = try formArgumentsForRun(release: release, executable: executable)
         try Task.execvp("swift", arguments: arguments, directory: directory.string)
     }
@@ -251,10 +246,20 @@ public class SPM {
         }*/
     }
 
+    private func runExternalTools() throws {
+        if config == nil || config!.externalTools == nil || config!.externalTools!.isEmpty {
+            Logger.normal <<< "No external tools configured"
+            return
+        }
+        for command in config!.externalTools! {
+            try runExternalTool(executable: command.exec, args: command.args)
+        }
+    }
+
     private func runExternalTool(
         executable: String, args: [String], transformer: TransformerPair? = nil
     ) throws {
-        Logger.verbose <<< "Running: \(executable) \(args.joined(separator: " "))"
+        Logger.normal <<< "Running external tool: \(executable) \(args.joined(separator: " "))"
 
         let stdout: WritableStream = transformer?.stdout ?? WriteStream.stdout
         let stderr: WritableStream = transformer?.stderr ?? WriteStream.stderr

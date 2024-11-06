@@ -18,8 +18,11 @@ public class SourceWatcher {
 
     private let watchQueue = DispatchQueue(label: "com.jakeheis.Ice.SourceWatcher")
 
-    public init(action: @escaping () -> Void) throws {
+    private let config: Config?
+
+    public init(config: Config? = nil, action: @escaping () -> Void) throws {
         self.action = action
+        self.config = config
     }
 
     #if os(macOS)
@@ -49,12 +52,18 @@ public class SourceWatcher {
                 $0.isDirectory || $0.extension == "swift"
             }
 
-            let resources = Path("Resources")
-            if resources.exists && resources.isDirectory {
-                children.append(
-                    contentsOf: try resources.recursiveChildren().filter {
-                        $0.isDirectory || $0.extension == "leaf"
-                    })
+            if config != nil && config!.watchPaths != nil && !config!.watchPaths!.isEmpty {
+                for watch in config!.watchPaths! {
+                    let path = Path(watch.path)
+                    if path.exists && path.isDirectory {
+                        children.append(
+                            contentsOf: try path.recursiveChildren().filter {
+                                $0.isDirectory
+                                    || ($0.extension != nil && !$0.extension!.isEmpty
+                                        && watch.extensions.contains($0.extension!))
+                            })
+                    }
+                }
             }
 
             for child in children {

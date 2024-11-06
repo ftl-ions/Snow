@@ -9,7 +9,7 @@ import IceKit
 import Rainbow
 import SwiftCLI
 
-class RunCommand: Command {
+class RunCommand: IceObject, Command {
     
     let name = "run"
     let shortDescription = "Runs the executable of the current package"
@@ -29,11 +29,11 @@ class RunCommand: Command {
     var task: Task? = nil
     
     func execute() throws {
-        let spm = SPM()
+        let spm = SPM(config: config.resolved)
         
         if watch {
-            let watcher = try SourceWatcher() {
-                self.stdout <<< "[ice] restarting due to changes...".green
+            let watcher = try SourceWatcher(config: config.resolved) {
+                self.stdout <<< "[snow] restarting due to changes...".green
                 self.task?.interrupt()
                 self.task = try? spm.run(release: self.release, executable: self.spmRunArguments())
             }
