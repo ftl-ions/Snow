@@ -268,7 +268,7 @@ public class SPM {
             executable: executable, arguments: args, directory: directory.string, stdout: stdout,
             stderr: stderr)
         let result = task.runSync()
-        Logger.normal <<< "Finished running external tool: \(executable))"
+        Logger.normal <<< "Finished running external tool: \(executable)"
         transformer?.wait()
         
 
