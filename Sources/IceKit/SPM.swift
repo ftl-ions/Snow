@@ -254,6 +254,7 @@ public class SPM {
         for command in config!.externalTools! {
             try runExternalTool(executable: command.exec, args: command.args)
         }
+        Logger.normal <<< "Finished running external tools"
     }
 
     private func runExternalTool(
@@ -267,7 +268,9 @@ public class SPM {
             executable: executable, arguments: args, directory: directory.string, stdout: stdout,
             stderr: stderr)
         let result = task.runSync()
+        Logger.normal <<< "Finished running external tool: \(executable))"
         transformer?.wait()
+        
 
         guard result == 0 else {
             throw IceError(exitStatus: result)
