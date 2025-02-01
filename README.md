@@ -27,7 +27,9 @@ install .build/release/snow /usr/local/bin
 
 ### Configuration
 
-Here is an example for `snow.json`, which adds a [Tailwind CSS](https://tailwindcss.com) preprocessor and watches for changes in the `Resources` directory, too:
+Here is an example for `snow.json`, which adds a [Tailwind CSS](https://tailwindcss.com) preprocessor and watches for changes in the `Resources` directory, too.
+
+Place this file in the root of your project (where `Package.swift` is).
 
 ```
 {
