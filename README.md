@@ -1,184 +1,61 @@
-# Ice
+# Snow
 
-[![Build Status](https://github.com/jakeheis/Ice/workflows/Test/badge.svg)](https://github.com/jakeheis/Ice/actions)
+❄️ A fork of Ice, the developer friendly package manager for Swift; 100% compatible with Swift Package Manager
 
-❄️ A developer friendly package manager for Swift; 100% compatible with Swift Package Manager
+## About
 
-### Motivation
+Snow is a fork of Ice that maintains all of Ice's developer-friendly features while adding enhanced watching and preprocessing capabilities.
 
-The official [Swift Package Manager](https://github.com/apple/swift-package-manager) is great at actually managing packages (resolving package versions, compiling source, etc.), but it lacks in developer friendliness. Ice uses Swift Package Manager in its core, but provides a much more developer friendly layer on top of SPM.
+#### More Paths
 
-A few features Ice has that SPM lacks:
-- Beautiful, yet information dense output (particularly while building and testing)
-- Ability to imperatively manage `Package.swift` (e.g. `ice add RxSwift`)
-- A centralized registry of packages
-- Automatic rebuilding / restarting of an app upon source changes
-- Short command names for the most used commands
+In addition to Sources, Snow can watch additional directories for changes during `build -w` and `run -w` operations.
 
-## Installation
+#### External Tools
 
-### [Mint](https://github.com/yonaskolb/mint) (recommended)
+Snow can run preprocessing tools before each build.
+
+### Installation
 
 ```bash
-mint install jakeheis/Ice
-```
-
-### Manual
-
-```bash
-git clone https://github.com/jakeheis/Ice
-cd Ice
+git clone https://github.com/ftl-ions/Snow
+cd Snow
 swift build -c release
-install .build/release/ice /usr/local/bin
+install .build/release/snow /usr/local/bin
 ```
 
-## Better output
+## Usage
 
-### Init
-![new](https://github.com/jakeheis/Ice/raw/gifs/new.gif)
+### Configuration
 
-### Build
-![build](https://github.com/jakeheis/Ice/raw/gifs/build.gif)
+Here is an example for `snow.json`, which adds a [Tailwind CSS](https://tailwindcss.com) preprocessor and watches for changes in the `Resources` directory, too:
 
-### Test
-![test](https://github.com/jakeheis/Ice/raw/gifs/test.gif)
-
-## Imperatively manage `Package.swift`
-
-Manage dependencies:
-
-```shell
-ice add RxSwift
-ice add Alamofire 4.5.1
-ice add jakeheis/SwiftCLI
-ice remove Alamofire
+```
+{
+    "externalTools" : [
+        {
+            "exec" : "npx",
+            "args" : [
+                "@tailwindcss/cli",
+                "-i",
+                "./Resources/input.css",
+                "-o",
+                "./Public/css/site.css"
+            ]
+        }
+    ],
+    "watchPaths" : [
+        {
+            "path" : "Resources",
+            "extensions" : [
+                "leaf", "css"
+            ]
+        }
+    ]
+}
 ```
 
-Manage targets:
+Multiple tools and watch paths can be configured.
 
-```shell
-ice target add Core
-ice target add --test CoreTests --dependencies Core
-ice target remove CoreTests
-```
+### Everything Else
 
-Manage products:
-
-```shell
-ice product add CoreLib --static
-ice product add cli --exec --targets=CoreLib
-ice product remove CoreLib
-```
-
-## Centralized package registry
-
-The built in registry (https://github.com/jakeheis/IceRegistry) consists of the most-starred Swift repositories on Github. You get these for free, but you can also add your own personal entries to a local registry:
-
-```shell
-> ice registry lookup Alamofire
-https://github.com/Alamofire/Alamofire
-> ice registry add https://github.com/jakeheis/SwiftCLI SwiftCLI
-> ice registry lookup SwiftCLI
-https://github.com/jakeheis/SwiftCLI
-```
-
-Once packages are in the registry (either the shared registry or your local registry), you can refer to them just by the project name:
-
-```shell
-> ice add Alamofire
-> ice add SwiftCLI
-```
-
-## Automatic rebuilding / restarting
-
-`ice build` and `ice run` both accept a watch flag which instructs them to rebuild/restart your app whenever a source file changes:
-
-```shell
-> ice build -w
-[ice] rebuilding due to changes...
-Compile CLI (20 sources)
-
-  ● Error: use of unresolved identifier 'dsf'
-
-    dsf
-    ^^^
-    at Sources/CLI/Target.swift:74
-
-[ice] rebuilding due to changes...
-Compile CLI (20 sources)
-Link ./.build/x86_64-apple-macosx10.10/debug/ice
-```
-
-```shell
-> ice run -w
-[ice] restarting due to changes...
-```
-
-## Other commands
-
-#### ice outdated
-
-Check if any dependencies are outdated
-
-```shell
-> ice outdated
-+-----------------+-----------------+----------+--------+
-| Name            | Wanted          | Resolved | Latest |
-+-----------------+-----------------+----------+--------+
-| FileKit         | 4.1.0 ..< 5.0.0 | 4.1.1    | 4.1.1  |
-| Rainbow         | 3.1.1 ..< 4.0.0 | 3.1.1    | 3.1.1  |
-| Regex           | 1.1.0 ..< 2.0.0 | 1.1.0    | 1.1.0  |
-| SwiftCLI        | 4.0.0 ..< 5.0.0 | 4.0.3    | 4.0.4  |
-| SwiftyTextTable | 0.8.0 ..< 1.0.0 | 0.8.0    | 0.8.0  |
-+-----------------+-----------------+----------+--------+
-```
-
-#### ice update
-Update the current package's dependencies
-
-```shell
-> ice update
-Update https://github.com/jakeheis/SwiftCLI
-Resolve https://github.com/jakeheis/SwiftCLI at 4.0.4
-> ice update SwiftCLI 5.0.0
-```
-
-#### ice clean
-Clean the current project by removing build artifacts
-
-#### ice reset
-Remove everything in the `.build` folder (build artifacts, checked out dependencies, etc.)
-
-#### ice init
-Initialize a new package in the current directory
-
-#### ice dump
-Dump the current package as JSON
-
-#### ice describe Alamofire
-Describe the package in the registry with the name "Alamofire"
-
-#### ice search CLI
-Search for packages in the registry with "CLI" in their name or description
-
-#### ice xc
-Generate an Xcode project for the current project and open it
-
-#### ice config get/set
-Configure Ice behavior. Recognized keys:
-- reformat: when writing `Package.swift`, should Ice reformat the file to be alphabetized
-
-## FAQ
-
-#### Can I use Ice and SPM side by side?
-Yes! Because Ice is built on SPM, you can seamlessly go back and forth between `ice` and `swift` commands.
-
-#### Why does Ice internally use Swift Package Manager at all? Why not write an entirely new package manager?
-
-A goal of Ice is to retain 100% compatibilty with SPM -- Ice should not splinter the ecosystem in any way. By building Ice on top of SPM, we can easily attain that goal.
-
-#### Why not contribute these improvements directly to SPM rather than creating a new layer on top of it?
-
-Swift Package Manager has considered some of the improvements offered in Ice but rejected them (for now). Notably, SPM chose to keep the package manager within the `swift` executable, meaning that commands are often quite verbose. I believe that tasks as common as cleaning a package should not require the user to type commands as lengthy as `swift package clean`.
-
-Having said that, it's my hope that Ice can be a proving ground for some of these features, a place where they can be fine-tuned and eventually can make their way into SPM core. Ideally, Ice will one day be unnecessary.
+Otherwise, Snow works [exactly like Ice](https://github.com/jakeheis/Ice?tab=readme-ov-file#imperatively-manage-packageswift).
